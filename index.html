@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="he" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="קוד דיגיטלי ל־Google AI Pro למשך 18 חודשים. רוכשים, מקבלים קישור מימוש של Google ומפעילים את המינוי בלחיצה.">
+  <title>Pro18 | קוד Google AI Pro ל־18 חודשים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Heebo:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Assistant', 'sans-serif'],
+            display: ['Heebo', 'sans-serif']
+          },
+          colors: {
+            ink: '#07111f',
+            panel: '#0d1a2b',
+            mint: '#70f0c0',
+            skyglow: '#77b7ff'
+          },
+          boxShadow: {
+            glow: '0 0 0 1px rgba(112,240,192,.12), 0 24px 80px rgba(0,0,0,.42)',
+            cta: '0 14px 42px rgba(112,240,192,.2)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background:
+        radial-gradient(circle at 15% 5%, rgba(66, 113, 255, .16), transparent 26rem),
+        radial-gradient(circle at 92% 24%, rgba(112, 240, 192, .09), transparent 24rem),
+        #07111f;
+      text-rendering: optimizeLegibility;
+    }
+
+    .noise::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .035;
+      z-index: 50;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+    }
+
+    .glass {
+      background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+      border: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .mesh-card {
+      background:
+        radial-gradient(circle at 15% 20%, rgba(119,183,255,.13), transparent 38%),
+        radial-gradient(circle at 90% 82%, rgba(112,240,192,.11), transparent 34%),
+        linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+    }
+
+    .grid-lines {
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+
+    .cta-shine { position: relative; overflow: hidden; }
+    .cta-shine::after {
+      content: "";
+      position: absolute;
+      inset: -40% auto -40% -30%;
+      width: 26%;
+      transform: skewX(-20deg);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), transparent);
+      animation: shine 3.8s ease-in-out infinite;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    .float-cta {
+      transform: translateY(calc(130% + var(--safe-bottom)));
+      opacity: 0;
+      transition: transform .35s ease, opacity .35s ease;
+    }
+    .float-cta.is-visible { transform: translateY(0); opacity: 1; }
+
+    details[open] .faq-icon { transform: rotate(45deg); }
+    details summary::-webkit-details-marker { display: none; }
+
+    dialog::backdrop {
+      background: rgba(2, 8, 18, .82);
+      backdrop-filter: blur(8px);
+    }
+
+    @keyframes shine {
+      0%, 55% { transform: translateX(-550%) skewX(-20deg); }
+      100% { transform: translateX(700%) skewX(-20deg); }
+    }
+
+    @keyframes ping-soft {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(112,240,192,.22); }
+      50% { box-shadow: 0 0 0 9px rgba(112,240,192,0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body class="noise min-h-screen overflow-x-hidden font-sans text-slate-100 antialiased selection:bg-mint selection:text-ink">
+  <a href="#main" class="fixed right-4 top-3 z-[70] -translate-y-20 rounded-xl bg-white px-4 py-3 font-bold text-ink transition focus:translate-y-0">
+    דילוג לתוכן
+  </a>
+
+  <header class="sticky top-0 z-40 border-b border-white/[.07] bg-ink/80 backdrop-blur-xl">
+    <nav class="mx-auto flex h-[68px] max-w-6xl items-center justify-between px-4 sm:px-6" aria-label="ניווט ראשי">
+      <a href="#main" class="flex items-center gap-2.5" aria-label="Pro18 — חזרה לראש העמוד">
+        <span class="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/[.06] shadow-inner">
+          <span class="font-display text-[13px] font-black tracking-tight text-mint" dir="ltr">P18</span>
+        </span>
+        <span>
+          <span class="block font-display text-base font-black leading-none tracking-tight">Pro18</span>
+          <span class="mt-1 block text-[10px] font-semibold tracking-[.08em] text-slate-400">AI ACCESS, ברור ופשוט</span>
+        </span>
+      </a>
+      <div class="flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-300/[.07] px-3 py-1.5 text-xs font-bold text-amber-100">
+        <span class="size-1.5 animate-pulse rounded-full bg-amber-300"></span>
+        מלאי מוגבל
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="relative isolate overflow-hidden pb-16 pt-12 sm:pb-24 sm:pt-20">
+      <div class="grid-lines absolute inset-0 -z-10"></div>
+      <div class="absolute -right-24 top-16 -z-10 size-64 rounded-full bg-skyglow/10 blur-3xl"></div>
+      <div class="absolute -left-24 bottom-0 -z-10 size-72 rounded-full bg-mint/10 blur-3xl"></div>
+
+      <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.04fr_.96fr] lg:gap-16">
+        <div class="text-center lg:text-right">
+          <div class="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/[.06] px-3 py-2 text-xs font-bold text-mint lg:mx-0">
+            <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+            קוד אחד. 18 חודשים של Google AI Pro.
+          </div>
+          <h1 class="font-display text-[2.45rem] font-black leading-[1.06] tracking-[-.045em] text-white sm:text-6xl lg:text-[4.4rem]">
+            18 חודשים של
+            <span class="bg-gradient-to-l from-mint via-skyglow to-violet-300 bg-clip-text text-transparent">Google AI Pro</span>
+            <br class="hidden sm:block">
+            ב־249 ₪ בלבד.
+          </h1>
+          <p class="mx-auto mt-6 max-w-2xl text-[1.06rem] font-medium leading-8 text-slate-300 sm:text-xl lg:mx-0">
+            רוכשים את הקוד באתר, מקבלים קישור מימוש של Google ולוחצים עליו — זה הכול. המינוי מופעל בחשבון האישי בלי להעתיק קודים ובלי תהליך מסורבל.
+          </p>
+
+          <div class="mt-7 grid grid-cols-3 gap-2" aria-label="יתרונות מרכזיים">
+            <div class="glass rounded-2xl px-2 py-3.5">
+              <i class="fa-solid fa-user-lock text-sm text-mint" aria-hidden="true"></i>
+              <span class="mt-2 block text-[11px] font-extrabold leading-4 text-white sm:text-sm">קוד דיגיטלי</span>
+            </div>
+            <div class="glass rounded-2xl px-2 py-3.5">
+              <i class="fa-solid fa-bolt text-sm text-mint" aria-hidden="true"></i>
+              <span class="mt-2 block text-[11px] font-extrabold leading-4 text-white sm:text-sm">משלוח מיידי</span>
+            </div>
+            <div class="glass rounded-2xl px-2 py-3.5">
+              <i class="fa-solid fa-arrow-pointer text-base text-mint" aria-hidden="true"></i>
+              <span class="mt-2 block text-[11px] font-extrabold leading-4 text-white sm:text-sm">הפעלה בלחיצה</span>
+            </div>
+          </div>
+
+          <div class="glass mt-4 overflow-hidden rounded-2xl p-4 text-right">
+            <div class="flex items-end justify-between gap-4">
+              <div>
+                <p class="text-xs font-bold text-slate-500">המחיר שלכם לכל התקופה</p>
+                <p class="mt-1 font-display text-4xl font-black leading-none text-white"><span dir="ltr">249 ₪</span></p>
+                <p class="mt-2 text-xs font-semibold text-slate-500">
+                  במקום <span class="text-slate-400 line-through" dir="ltr">1,348.20 ₪</span> ברכישה חודשית מ־Google
+                </p>
+              </div>
+              <div class="shrink-0 rounded-2xl border border-mint/20 bg-mint/[.08] px-3 py-2.5 text-center">
+                <span class="block text-[10px] font-black tracking-[.08em] text-mint">חיסכון של</span>
+                <span class="mt-0.5 block font-display text-lg font-black text-white" dir="ltr">1,099.20 ₪</span>
+                <span class="block text-[10px] font-extrabold text-mint">כ־82% פחות</span>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center justify-center gap-2 rounded-xl bg-white/[.035] px-3 py-2 text-xs font-bold text-slate-300">
+              <i class="fa-solid fa-chart-line text-mint" aria-hidden="true"></i>
+              רק <span class="font-black text-white" dir="ltr">13.83 ₪</span> לחודש במקום <span class="text-slate-400" dir="ltr">74.90 ₪</span>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            <a class="cta-shine flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-mint px-6 py-4 text-[1.05rem] font-black text-ink shadow-cta transition hover:-translate-y-0.5 hover:bg-[#91f7d2] focus:outline-none focus:ring-4 focus:ring-mint/30 sm:mx-auto sm:max-w-md lg:mx-0"
+               href="#checkout" data-checkout
+               aria-label="מעבר לתשלום מאובטח">
+              <i class="fa-solid fa-lock text-lg" aria-hidden="true"></i>
+              כן, אני רוצה לחסוך 1,099 ₪
+              <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i>
+            </a>
+            <p class="mt-3 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400 lg:justify-start">
+              <i class="fa-solid fa-circle-check text-mint" aria-hidden="true"></i>
+              קישור המימוש נשלח דיגיטלית מיד לאחר השלמת ההזמנה
+            </p>
+          </div>
+        </div>
+
+        <div class="reveal relative mx-auto w-full max-w-xl">
+          <div class="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-skyglow/15 to-mint/10 blur-2xl"></div>
+          <div class="mesh-card overflow-hidden rounded-[2rem] border border-white/10 p-3 shadow-glow sm:p-4">
+            <div class="rounded-[1.45rem] border border-white/[.08] bg-[#07101d]/90 p-5 sm:p-7">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-[10px] font-black tracking-[.16em] text-mint">כל מה שצריך כדי לעבוד חכם יותר</p>
+                  <h2 class="mt-1 font-display text-xl font-black text-white">מה מקבלים עם Google AI Pro?</h2>
+                </div>
+                <div class="grid size-11 shrink-0 place-items-center rounded-2xl bg-white shadow-lg" aria-label="Google">
+                  <svg class="size-7" viewBox="0 0 24 24" role="img" aria-hidden="true">
+                    <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.06H12v3.9h5.38a4.6 4.6 0 0 1-2 3.02v2.53h3.24c1.9-1.75 2.98-4.33 2.98-7.39Z"/>
+                    <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.38l-3.24-2.53c-.9.6-2.04.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.06v2.61A10 10 0 0 0 12 22Z"/>
+                    <path fill="#FBBC05" d="M6.4 13.92A6 6 0 0 1 6.08 12c0-.67.12-1.32.32-1.92V7.47H3.06A10 10 0 0 0 2 12c0 1.61.39 3.14 1.06 4.53l3.34-2.61Z"/>
+                    <path fill="#EA4335" d="M12 5.95c1.47 0 2.79.5 3.82 1.49l2.87-2.87A9.65 9.65 0 0 0 12 2a10 10 0 0 0-8.94 5.47l3.34 2.61c.79-2.37 3-4.13 5.6-4.13Z"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                <span class="rounded-full border border-mint/20 bg-mint/[.08] px-3 py-1 text-[10px] font-black text-mint">5 TB אחסון</span>
+                <span class="rounded-full border border-skyglow/20 bg-skyglow/[.08] px-3 py-1 text-[10px] font-black text-skyglow">Gemini 3 Pro</span>
+                <span class="rounded-full border border-violet-300/20 bg-violet-300/[.08] px-3 py-1 text-[10px] font-black text-violet-200">YouTube Premium Lite</span>
+              </div>
+
+              <div class="mt-4 max-h-[26rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
+                <div class="rounded-xl border border-white/[.07] bg-white/[.03] p-3">
+                  <p class="text-[10px] font-black tracking-[.12em] text-skyglow">פרודוקטיביות</p>
+                  <ul class="mt-2 space-y-2 text-[11px] leading-4 text-slate-400">
+                    <li class="flex gap-2"><i class="fa-solid fa-wand-magic-sparkles mt-0.5 text-skyglow"></i><span><strong class="text-white">Gemini 3 Pro + Deep Research</strong> — גישה מורחבת ומגבלות שימוש גבוהות פי 4</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-layer-group mt-0.5 text-mint"></i><span><strong class="text-white">Gemini באפליקציות</strong> — Gmail, Docs, Sheets ועוד</span></li>
+                    <li class="flex gap-2"><i class="fa-brands fa-chrome mt-0.5 text-slate-300"></i><span><strong class="text-white">Chrome Auto Browse</strong> — גלישה אוטומטית (ארה״ב בלבד)</span></li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-white/[.07] bg-white/[.03] p-3">
+                  <p class="text-[10px] font-black tracking-[.12em] text-violet-300">יצירה ולמידה</p>
+                  <ul class="mt-2 space-y-2 text-[11px] leading-4 text-slate-400">
+                    <li class="flex gap-2"><i class="fa-solid fa-image mt-0.5 text-violet-300"></i><span><strong class="text-white">תמונה, מוזיקה ווידאו</strong> — יצירה ב-Gemini, Search ו-Flow</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-book-open mt-0.5 text-amber-200"></i><span><strong class="text-white">NotebookLM</strong> — מודלים ותכונות מורחבים ללמידה ומחקר</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-file-lines mt-0.5 text-skyglow"></i><span><strong class="text-white">דוחות מעמיקים</strong> — דוחות רב-עמודיים ב-Gemini וב-Search</span></li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-white/[.07] bg-white/[.03] p-3">
+                  <p class="text-[10px] font-black tracking-[.12em] text-emerald-300">פיתוח וקוד</p>
+                  <ul class="mt-2 space-y-2 text-[11px] leading-4 text-slate-400">
+                    <li class="flex gap-2"><i class="fa-solid fa-code mt-0.5 text-emerald-300"></i><span><strong class="text-white">AI Studio, Antigravity ו-Jules</strong> — מגבלות מורחבות לפיתוח</span></li>
+                    <li class="flex gap-2"><i class="fa-brands fa-android mt-0.5 text-emerald-300"></i><span><strong class="text-white">Android Studio</strong> — סיוע AI מתקדם לפיתוח אנדרואיד</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-cloud mt-0.5 text-skyglow"></i><span><strong class="text-white">$10 קרדיט Google Cloud</strong> — חודשי דרך Google Developer Program</span></li>
+                  </ul>
+                </div>
+                <div class="rounded-xl border border-white/[.07] bg-white/[.03] p-3">
+                  <p class="text-[10px] font-black tracking-[.12em] text-rose-300">ועוד</p>
+                  <ul class="mt-2 space-y-2 text-[11px] leading-4 text-slate-400">
+                    <li class="flex gap-2"><i class="fa-brands fa-youtube mt-0.5 text-rose-300"></i><span><strong class="text-white">YouTube Premium Lite</strong> — פחות פרסומות, צפייה לא מקוונת וברקע</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-heart-pulse mt-0.5 text-rose-300"></i><span><strong class="text-white">Google Health Premium</strong> — אימון בריאות עם Gemini</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-house mt-0.5 text-amber-200"></i><span><strong class="text-white">Google Home Premium</strong> — 30 יום היסטוריית אירועים + Gemini</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-users mt-0.5 text-mint"></i><span><strong class="text-white">5 TB + שיתוף משפחתי</strong> — עד 5 בני משפחה ב-Drive, Gmail ו-Photos</span></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="mt-4 flex items-start gap-2 rounded-2xl border border-white/[.07] bg-white/[.025] p-3.5">
+                <i class="fa-solid fa-circle-info mt-0.5 text-xs text-skyglow" aria-hidden="true"></i>
+                <p class="text-[11px] font-semibold leading-4 text-slate-500">
+                  חלק מהתכונות זמינות רק בארה״ב או במדינות נבחרות. המכסות, הזמינות וההטבות כפופות לתנאים העדכניים של Google.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-y border-white/[.06] bg-white/[.018] py-12 sm:py-16" id="walkthrough">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6">
+        <div class="reveal text-center">
+          <p class="text-xs font-black tracking-[.18em] text-mint">רואים לפני שמחליטים</p>
+          <h2 class="mt-3 font-display text-3xl font-black tracking-tight text-white sm:text-4xl">כך מממשים את הקוד</h2>
+          <p class="mx-auto mt-3 max-w-2xl leading-7 text-slate-400">העתקה, הדבקה ואישור — צפו במסלול הקצר עד להפעלת המינוי בחשבון שלכם.</p>
+        </div>
+
+        <button id="openWalkthrough" type="button" class="group reveal relative mt-8 w-full overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0a1525] text-right shadow-glow focus:outline-none focus:ring-4 focus:ring-mint/20" aria-label="פתיחת סיור האקטיבציה">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(119,183,255,.16),transparent_35%),radial-gradient(circle_at_85%_85%,rgba(112,240,192,.1),transparent_36%)]"></div>
+          <div class="relative grid min-h-[300px] place-items-center px-5 py-10 sm:min-h-[390px]">
+            <div class="absolute inset-x-5 top-5 flex items-center justify-between text-[10px] font-black tracking-[.12em] text-slate-500 sm:inset-x-8 sm:top-8">
+              <span dir="ltr">PRO18 / WALKTHROUGH</span>
+              <span class="rounded-full border border-white/10 px-3 py-1.5 text-slate-300">02:10 דקות</span>
+            </div>
+            <div class="relative text-center">
+              <span class="mx-auto grid size-20 place-items-center rounded-full border border-mint/30 bg-mint text-2xl text-ink shadow-[0_0_0_14px_rgba(112,240,192,.06),0_18px_45px_rgba(0,0,0,.38)] transition duration-300 group-hover:scale-105">
+                <i class="fa-solid fa-play mr-1" aria-hidden="true"></i>
+              </span>
+              <p class="mt-6 font-display text-2xl font-black text-white">סיור אקטיבציה שקוף</p>
+              <p class="mt-2 text-sm font-semibold text-slate-400">לחצו לצפייה בשלבים ובנקודות האימות</p>
+            </div>
+            <div class="absolute inset-x-5 bottom-5 flex items-center gap-3 sm:inset-x-8 sm:bottom-8">
+              <span class="text-[10px] font-bold text-slate-500" dir="ltr">00:00</span>
+              <div class="h-1 flex-1 overflow-hidden rounded-full bg-white/10"><div class="h-full w-[18%] rounded-full bg-mint"></div></div>
+              <i class="fa-solid fa-expand text-xs text-slate-500" aria-hidden="true"></i>
+            </div>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <section class="py-16 sm:py-24" id="how-it-works">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6">
+        <div class="reveal text-center">
+          <p class="text-xs font-black tracking-[.18em] text-mint">שלושה צעדים. פחות מדקה.</p>
+          <h2 class="mt-3 font-display text-3xl font-black tracking-tight text-white sm:text-4xl">איך זה עובד?</h2>
+        </div>
+
+        <div class="mt-9 grid gap-4 md:grid-cols-3">
+          <article class="glass reveal relative overflow-hidden rounded-[1.75rem] p-6 sm:p-8">
+            <span class="absolute -left-3 -top-8 font-display text-[8rem] font-black leading-none text-white/[.035]">1</span>
+            <div class="relative">
+              <span class="grid size-12 place-items-center rounded-2xl border border-skyglow/20 bg-skyglow/10 text-lg text-skyglow"><i class="fa-solid fa-cart-shopping"></i></span>
+              <p class="mt-6 text-xs font-black tracking-[.14em] text-skyglow">שלב 01</p>
+              <h3 class="mt-2 font-display text-2xl font-black text-white">רוכשים באתר</h3>
+              <p class="mt-3 leading-7 text-slate-400">משלימים את רכישת הקוד הדיגיטלי ל־Google AI Pro למשך 18 חודשים.</p>
+            </div>
+          </article>
+          <article class="glass reveal relative overflow-hidden rounded-[1.75rem] p-6 sm:p-8">
+            <span class="absolute -left-3 -top-8 font-display text-[8rem] font-black leading-none text-white/[.035]">2</span>
+            <div class="relative">
+              <span class="grid size-12 place-items-center rounded-2xl border border-violet-300/20 bg-violet-300/10 text-lg text-violet-300"><i class="fa-solid fa-link"></i></span>
+              <p class="mt-6 text-xs font-black tracking-[.14em] text-mint">שלב 02</p>
+              <h3 class="mt-2 font-display text-2xl font-black text-white">מקבלים קישור</h3>
+              <p class="mt-3 leading-7 text-slate-400">קישור המימוש האישי של Google נשלח אליכם באופן דיגיטלי.</p>
+            </div>
+          </article>
+          <article class="glass reveal relative overflow-hidden rounded-[1.75rem] p-6 sm:p-8">
+            <span class="absolute -left-3 -top-8 font-display text-[8rem] font-black leading-none text-white/[.035]">3</span>
+            <div class="relative">
+              <span class="grid size-12 place-items-center rounded-2xl border border-mint/20 bg-mint/10 text-lg text-mint"><i class="fa-solid fa-arrow-pointer"></i></span>
+              <p class="mt-6 text-xs font-black tracking-[.14em] text-mint">שלב 03</p>
+              <h3 class="mt-2 font-display text-2xl font-black text-white">לוחצים — וזהו</h3>
+              <p class="mt-3 leading-7 text-slate-400">פותחים את הקישור — והמינוי מופעל בחשבון האישי.</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="reveal mt-5 flex items-start gap-3 rounded-2xl border border-mint/15 bg-mint/[.045] p-4 text-sm leading-6 text-slate-300 sm:items-center sm:px-6">
+          <i class="fa-solid fa-circle-check mt-1 text-mint sm:mt-0" aria-hidden="true"></i>
+          <p><strong class="text-white">בלי להסתבך:</strong> אין צורך להעתיק קוד או לעבור מדריך ארוך — פשוט פותחים את הקישור של Google.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-y border-white/[.06] bg-white/[.018] py-16 sm:py-24" id="faq">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6">
+        <div class="reveal text-center">
+          <p class="text-xs font-black tracking-[.18em] text-mint">בלי אותיות קטנות מפתיעות</p>
+          <h2 class="mt-3 font-display text-3xl font-black tracking-tight text-white sm:text-4xl">השאלות הסקפטיות באמת</h2>
+        </div>
+
+        <div class="mt-9 space-y-3">
+          <details class="glass reveal group rounded-2xl">
+            <summary class="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-extrabold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mint">
+              האם זה חוקי ורשמי?
+              <span class="faq-icon grid size-8 shrink-0 place-items-center rounded-full bg-white/[.06] text-mint transition"><i class="fa-solid fa-plus text-xs"></i></span>
+            </summary>
+            <div class="px-5 pb-5 text-sm leading-7 text-slate-400">
+              המימוש מתבצע ישירות בפלטפורמה של Google ובחשבון האישי שלכם. Pro18 הוא משווק עצמאי ואינו קשור או מסונף ל־Google LLC.
+            </div>
+          </details>
+
+          <details class="glass reveal group rounded-2xl">
+            <summary class="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-extrabold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mint">
+              איך המינוי נמשך 18 חודשים?
+              <span class="faq-icon grid size-8 shrink-0 place-items-center rounded-full bg-white/[.06] text-mint transition"><i class="fa-solid fa-plus text-xs"></i></span>
+            </summary>
+            <div class="px-5 pb-5 text-sm leading-7 text-slate-400">
+              קישור המימוש מפעיל מינוי Google AI Pro לתקופה של 18 חודשים. לאחר האישור ניתן לראות את פרטי המינוי ישירות בחשבון Google One.
+            </div>
+          </details>
+
+          <details class="glass reveal group rounded-2xl">
+            <summary class="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-extrabold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mint">
+              מה קורה לקבצים, למיילים ולמידע הקיים שלי?
+              <span class="faq-icon grid size-8 shrink-0 place-items-center rounded-full bg-white/[.06] text-mint transition"><i class="fa-solid fa-plus text-xs"></i></span>
+            </summary>
+            <div class="px-5 pb-5 text-sm leading-7 text-slate-400">
+              הקוד מוסיף את המינוי לחשבון האישי ואינו מוחק קבצים, מיילים או מידע קיים. אתם נשארים בשליטה מלאה על החשבון.
+            </div>
+          </details>
+
+          <details class="glass reveal group rounded-2xl">
+            <summary class="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-extrabold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mint">
+              האם צריך למסור סיסמה או קוד אימות?
+              <span class="faq-icon grid size-8 shrink-0 place-items-center rounded-full bg-white/[.06] text-mint transition"><i class="fa-solid fa-plus text-xs"></i></span>
+            </summary>
+            <div class="px-5 pb-5 text-sm leading-7 text-slate-400">
+              לא. אתם נכנסים לחשבון ומממשים את הקוד בעצמכם. אין צורך להעביר סיסמה, קוד אימות או גישה לחשבון.
+            </div>
+          </details>
+
+          <details class="glass reveal group rounded-2xl">
+            <summary class="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-extrabold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mint">
+              יש לי כבר Google One או Google AI Pro. מה עושים?
+              <span class="faq-icon grid size-8 shrink-0 place-items-center rounded-full bg-white/[.06] text-mint transition"><i class="fa-solid fa-plus text-xs"></i></span>
+            </summary>
+            <div class="px-5 pb-5 text-sm leading-7 text-slate-400">
+              אם קיים מינוי פעיל, ייתכן שיהיה צורך להמתין לסיומו לפני פתיחת קישור המימוש. התנאים המוצגים בעמוד הרשמי של Google הם הקובעים.
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-16 sm:py-24">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <div class="reveal relative overflow-hidden rounded-[2rem] border border-mint/15 bg-gradient-to-br from-[#11283a] to-[#0a1727] px-5 py-10 text-center shadow-glow sm:px-10 sm:py-14">
+          <div class="absolute -right-20 -top-20 size-56 rounded-full bg-skyglow/10 blur-3xl"></div>
+          <div class="absolute -bottom-24 -left-16 size-64 rounded-full bg-mint/10 blur-3xl"></div>
+          <div class="relative">
+            <span class="mx-auto grid size-12 place-items-center rounded-2xl border border-mint/20 bg-mint/10 text-mint"><i class="fa-solid fa-key"></i></span>
+            <h2 class="mt-5 font-display text-3xl font-black tracking-tight text-white sm:text-4xl">במקום 1,348.20 ₪ — רק 249 ₪.</h2>
+            <p class="mx-auto mt-3 max-w-xl leading-7 text-slate-300">חיסכון של 1,099.20 ₪ על 18 חודשים. מזמינים, מקבלים קישור של Google ולוחצים להפעלה.</p>
+            <a class="cta-shine mx-auto mt-7 flex min-h-14 w-full max-w-md items-center justify-center gap-3 rounded-2xl bg-mint px-6 py-4 text-[1.05rem] font-black text-ink shadow-cta transition hover:-translate-y-0.5 hover:bg-[#91f7d2] focus:outline-none focus:ring-4 focus:ring-mint/30"
+               href="#checkout" data-checkout>
+              <i class="fa-solid fa-credit-card text-lg" aria-hidden="true"></i>
+              לקנות עכשיו ב־249 ₪
+            </a>
+            <p class="mt-3 text-xs font-semibold text-slate-500">מוצר דיגיטלי · קישור מימוש ישיר של Google</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/[.07] pb-28 pt-10 sm:pb-10">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+      <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+        <div class="max-w-xl">
+          <div class="flex items-center gap-2.5">
+            <span class="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/[.06] font-display text-[13px] font-black text-mint" dir="ltr">P18</span>
+            <span class="font-display font-black">Pro18</span>
+          </div>
+          <p class="mt-4 text-xs leading-6 text-slate-500">
+            Pro18 הוא שירות עצמאי ואינו קשור, ממומן, מאושר או מופעל על־ידי Google LLC. Google, Google One, Gemini ו־Google AI Pro הם סימני מסחר של בעליהם. זמינות התכונות ותנאי השירות נקבעים על־ידי Google ועשויים להשתנות.
+          </p>
+        </div>
+        <nav class="flex flex-wrap gap-x-5 gap-y-3 text-sm font-bold text-slate-400" aria-label="קישורים משפטיים">
+          <button class="transition hover:text-white focus:outline-none focus:ring-2 focus:ring-mint" type="button" data-open-dialog="termsDialog">תקנון האתר</button>
+          <button class="transition hover:text-white focus:outline-none focus:ring-2 focus:ring-mint" type="button" data-open-dialog="privacyDialog">מדיניות פרטיות</button>
+          <a class="whatsapp-link transition hover:text-white focus:outline-none focus:ring-2 focus:ring-mint" href="https://wa.me/?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%9C%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%D7%A0%D7%95%D7%A1%D7%A4%D7%99%D7%9D" target="_blank" rel="noopener noreferrer">יצירת קשר</a>
+        </nav>
+      </div>
+      <div class="mt-8 border-t border-white/[.06] pt-5 text-xs text-slate-600">
+        © <span id="currentYear"></span> Pro18. כל הזכויות שמורות.
+      </div>
+    </div>
+  </footer>
+
+  <div id="floatingCta" class="float-cta fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink/90 px-3 pb-[calc(.75rem+var(--safe-bottom))] pt-3 backdrop-blur-xl sm:hidden">
+    <a class="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-mint px-5 py-3.5 font-black text-ink shadow-cta focus:outline-none focus:ring-4 focus:ring-mint/30"
+       href="#checkout" data-checkout>
+      <i class="fa-solid fa-lock text-base" aria-hidden="true"></i>
+      לקנות עכשיו ב־249 ₪
+      <span class="size-1.5 rounded-full bg-ink/60" style="animation: ping-soft 2s infinite"></span>
+    </a>
+  </div>
+
+  <dialog id="walkthroughDialog" class="m-auto w-[calc(100%-2rem)] max-w-2xl rounded-[1.75rem] border border-white/10 bg-panel p-0 text-right text-slate-100 shadow-2xl">
+    <div class="p-5 sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-black tracking-[.14em] text-mint">סיור אקטיבציה</p>
+          <h2 class="mt-2 font-display text-2xl font-black text-white">שלושה צעדים וסיימתם</h2>
+        </div>
+        <button type="button" class="grid size-11 shrink-0 place-items-center rounded-full bg-white/[.06] text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-mint" data-close-dialog aria-label="סגירת החלון">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <ol class="mt-7 space-y-3">
+        <li class="flex gap-4 rounded-2xl border border-white/[.07] bg-white/[.035] p-4">
+          <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-skyglow/10 font-black text-skyglow">1</span>
+          <div><h3 class="font-extrabold text-white">רוכשים את הקוד</h3><p class="mt-1 text-sm leading-6 text-slate-400">משלימים את הרכישה באתר וממתינים לקבלת קישור המימוש.</p></div>
+        </li>
+        <li class="flex gap-4 rounded-2xl border border-white/[.07] bg-white/[.035] p-4">
+          <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-skyglow/10 font-black text-skyglow">2</span>
+          <div><h3 class="font-extrabold text-white">מקבלים קישור של Google</h3><p class="mt-1 text-sm leading-6 text-slate-400">קישור המימוש האישי נשלח אליכם באופן דיגיטלי.</p></div>
+        </li>
+        <li class="flex gap-4 rounded-2xl border border-mint/10 bg-mint/[.035] p-4">
+          <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-mint/10 font-black text-mint">3</span>
+          <div><h3 class="font-extrabold text-white">לוחצים ומפעילים</h3><p class="mt-1 text-sm leading-6 text-slate-400">פותחים את הקישור — ויש לכם Google AI Pro.</p></div>
+        </li>
+      </ol>
+      <a class="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-mint px-5 py-3 font-black text-ink focus:outline-none focus:ring-4 focus:ring-mint/30"
+         href="#checkout" data-checkout>
+        <i class="fa-solid fa-credit-card text-base"></i>
+        לקנות עכשיו ב־249 ₪
+      </a>
+    </div>
+  </dialog>
+
+  <dialog id="termsDialog" class="m-auto max-h-[85vh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-[1.75rem] border border-white/10 bg-panel p-0 text-right text-slate-100 shadow-2xl">
+    <article class="p-5 sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <div><p class="text-xs font-black tracking-[.14em] text-mint">מידע משפטי</p><h2 class="mt-2 font-display text-2xl font-black">תקנון האתר</h2></div>
+        <button type="button" class="grid size-11 shrink-0 place-items-center rounded-full bg-white/[.06] focus:outline-none focus:ring-2 focus:ring-mint" data-close-dialog aria-label="סגירת התקנון"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mt-6 space-y-4 text-sm leading-7 text-slate-400">
+        <p>האתר מציע למכירה קוד דיגיטלי למינוי Google AI Pro. המחיר, אופן התשלום, זמן האספקה ומדיניות הביטול יוצגו ללקוח לפני השלמת ההזמנה.</p>
+        <p>קישור המימוש נשלח באופן דיגיטלי ונפתח על־ידי הלקוח בחשבון Google האישי. לאחר מסירת קישור תקין לא ניתן לבטל את העסקה, בכפוף להוראות הדין.</p>
+        <p>אין למסור לנציגי השירות סיסמה, קוד אימות, קוד גיבוי או פרטי כרטיס מלאים. המימוש מתבצע באופן עצמאי.</p>
+        <p>תכונות Google AI Pro, מגבלות שימוש, נפח אחסון וזמינות אזורית עשויים להשתנות לפי החלטת Google. במקרה של סתירה, התנאים הרשמיים של Google גוברים.</p>
+      </div>
+    </article>
+  </dialog>
+
+  <dialog id="privacyDialog" class="m-auto max-h-[85vh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-[1.75rem] border border-white/10 bg-panel p-0 text-right text-slate-100 shadow-2xl">
+    <article class="p-5 sm:p-8">
+      <div class="flex items-start justify-between gap-4">
+        <div><p class="text-xs font-black tracking-[.14em] text-mint">הגנת מידע</p><h2 class="mt-2 font-display text-2xl font-black">מדיניות פרטיות</h2></div>
+        <button type="button" class="grid size-11 shrink-0 place-items-center rounded-full bg-white/[.06] focus:outline-none focus:ring-2 focus:ring-mint" data-close-dialog aria-label="סגירת מדיניות הפרטיות"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mt-6 space-y-4 text-sm leading-7 text-slate-400">
+        <p>בעת יצירת הזמנה נשמרים מזהה הזמנה, סכום, סטטוס עסקה ופרטי קשר שמתקבלים מספק התשלום. המידע משמש לסליקה, מסירת המוצר, תמיכה ותיעוד.</p>
+        <p>פרטי כרטיס האשראי מוזנים אצל ספק התשלום ואינם נשמרים בשרתי Pro18. קישורי המימוש נשמרים באופן מוצפן ומוקצים להזמנה אחת בלבד.</p>
+        <p>ניתן לבקש עיון, תיקון או מחיקה של מידע באמצעות יצירת קשר. מידע יישמר רק למשך הזמן הנדרש למתן השירות ולעמידה בחובות דין.</p>
+      </div>
+    </article>
+  </dialog>
+
+  <dialog id="checkoutDialog" class="m-auto w-[calc(100%-2rem)] max-w-md rounded-[1.75rem] border border-white/10 bg-panel p-0 text-center text-slate-100 shadow-2xl">
+    <div class="p-7">
+      <div id="checkoutSpinner" class="mx-auto grid size-16 animate-pulse place-items-center rounded-full border border-mint/20 bg-mint/10 text-2xl text-mint">
+        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+      </div>
+      <h2 id="checkoutTitle" class="mt-5 font-display text-2xl font-black">פותחים תשלום מאובטח</h2>
+      <p id="checkoutMessage" class="mt-2 text-sm leading-6 text-slate-400">עוד רגע ייפתח טאב תשלום מאובטח. תישארו באתר — נעדכן אתכם כאן כשהתשלום יאושר.</p>
+      <a id="checkoutReopen" href="#" target="_blank" rel="noopener noreferrer"
+         class="mt-4 hidden min-h-11 w-full items-center justify-center rounded-xl border border-mint/30 bg-mint/10 px-4 font-bold text-mint transition hover:bg-mint/20">
+        פתיחת עמוד התשלום
+      </a>
+      <div id="checkoutRedemption" class="mt-5 hidden rounded-2xl border border-emerald-300/20 bg-emerald-300/[.06] p-4 text-right">
+        <p class="text-sm font-bold text-emerald-200">קישור Google AI Pro שלך מוכן</p>
+        <a id="checkoutRedemptionLink" href="#" target="_blank" rel="noopener noreferrer"
+           class="mt-3 flex min-h-12 items-center justify-center rounded-xl bg-[#70f0c0] px-4 font-black text-[#07111f] transition hover:bg-[#91f7d2]">
+          פתיחת קישור המימוש
+        </a>
+      </div>
+      <button id="checkoutClose" type="button" class="mt-5 hidden min-h-11 w-full rounded-xl border border-white/10 px-4 font-bold" data-close-dialog>סגירה וניסיון נוסף</button>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      const floatingCta = document.getElementById('floatingCta');
+      const year = document.getElementById('currentYear');
+      year.textContent = new Date().getFullYear();
+
+      const updateFloatingCta = () => {
+        const shouldShow = window.scrollY > 520 &&
+          window.scrollY + window.innerHeight < document.documentElement.scrollHeight - 260;
+        floatingCta.classList.toggle('is-visible', shouldShow);
+      };
+      window.addEventListener('scroll', updateFloatingCta, { passive: true });
+      updateFloatingCta();
+
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach((element) => revealObserver.observe(element));
+
+      const walkthroughDialog = document.getElementById('walkthroughDialog');
+      document.getElementById('openWalkthrough').addEventListener('click', () => walkthroughDialog.showModal());
+
+      document.querySelectorAll('[data-open-dialog]').forEach((button) => {
+        button.addEventListener('click', () => document.getElementById(button.dataset.openDialog).showModal());
+      });
+
+      document.querySelectorAll('[data-close-dialog]').forEach((button) => {
+        button.addEventListener('click', () => button.closest('dialog').close());
+      });
+
+      document.querySelectorAll('dialog').forEach((dialog) => {
+        dialog.addEventListener('click', (event) => {
+          const box = dialog.getBoundingClientRect();
+          const outside = event.clientX < box.left || event.clientX > box.right ||
+            event.clientY < box.top || event.clientY > box.bottom;
+          if (outside) dialog.close();
+        });
+      });
+
+      let checkoutInProgress = false;
+      let checkoutPollTimer = null;
+      const checkoutDialog = document.getElementById('checkoutDialog');
+      const checkoutSpinner = document.getElementById('checkoutSpinner');
+      const checkoutTitle = document.getElementById('checkoutTitle');
+      const checkoutMessage = document.getElementById('checkoutMessage');
+      const checkoutClose = document.getElementById('checkoutClose');
+      const checkoutReopen = document.getElementById('checkoutReopen');
+      const checkoutRedemption = document.getElementById('checkoutRedemption');
+      const checkoutRedemptionLink = document.getElementById('checkoutRedemptionLink');
+
+      const stopCheckoutPolling = () => {
+        if (checkoutPollTimer) {
+          clearTimeout(checkoutPollTimer);
+          checkoutPollTimer = null;
+        }
+      };
+
+      const resetCheckoutDialog = () => {
+        stopCheckoutPolling();
+        checkoutSpinner.classList.remove('hidden');
+        checkoutTitle.textContent = 'פותחים תשלום מאובטח';
+        checkoutMessage.textContent = 'עוד רגע ייפתח טאב תשלום מאובטח. תישארו באתר — נעדכן אתכם כאן כשהתשלום יאושר.';
+        checkoutClose.classList.add('hidden');
+        checkoutClose.textContent = 'סגירה וניסיון נוסף';
+        checkoutReopen.classList.add('hidden');
+        checkoutReopen.classList.remove('flex');
+        checkoutRedemption.classList.add('hidden');
+      };
+
+      const showCheckoutSuccess = (title, message, redemptionUrl) => {
+        stopCheckoutPolling();
+        checkoutSpinner.classList.add('hidden');
+        checkoutTitle.textContent = title;
+        checkoutMessage.textContent = message;
+        checkoutReopen.classList.add('hidden');
+        checkoutReopen.classList.remove('flex');
+        checkoutClose.classList.remove('hidden');
+        checkoutClose.textContent = 'סגירה';
+        checkoutInProgress = false;
+
+        if (redemptionUrl) {
+          checkoutRedemptionLink.href = redemptionUrl;
+          checkoutRedemption.classList.remove('hidden');
+        }
+      };
+
+      const pollCheckoutOrder = (orderId, token) => {
+        let attempts = 0;
+
+        const poll = async () => {
+          if (!checkoutDialog.open) return;
+          attempts += 1;
+
+          try {
+            const response = await fetch(
+              `/api/orders/${encodeURIComponent(orderId)}?token=${encodeURIComponent(token)}`,
+              { cache: 'no-store' }
+            );
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+
+            if (data.status === 'fulfilled' && data.redemptionUrl) {
+              showCheckoutSuccess(
+                'הקישור שלך מוכן!',
+                'התשלום אושר והמינוי מוכן להפעלה.',
+                data.redemptionUrl
+              );
+              return;
+            }
+
+            if (['paid_awaiting_stock', 'manual_review', 'confirmed'].includes(data.status)) {
+              showCheckoutSuccess(
+                'התשלום אושר!',
+                'ההזמנה נקלטה בהצלחה. קישור המימוש יישלח אליכם בקרוב.'
+              );
+              return;
+            }
+
+            if (data.status === 'failed' || data.status === 'cancelled') {
+              stopCheckoutPolling();
+              checkoutSpinner.classList.add('hidden');
+              checkoutTitle.textContent = data.status === 'failed' ? 'התשלום נכשל' : 'התשלום בוטל';
+              checkoutMessage.textContent = 'אפשר לנסות שוב או לפתוח מחדש את עמוד התשלום.';
+              checkoutReopen.classList.remove('hidden');
+              checkoutReopen.classList.add('flex');
+              checkoutClose.classList.remove('hidden');
+              checkoutClose.textContent = 'סגירה וניסיון נוסף';
+              checkoutInProgress = false;
+              return;
+            }
+          } catch {
+            if (attempts > 15) {
+              checkoutMessage.textContent = 'ממתינים לאישור התשלום. אפשר להשאיר את החלון פתוח — נמשיך לבדוק אוטומטית.';
+            }
+          }
+
+          if (attempts < 90 && checkoutDialog.open) {
+            checkoutPollTimer = setTimeout(poll, attempts < 15 ? 2000 : 5000);
+            return;
+          }
+
+          if (checkoutDialog.open) {
+            checkoutMessage.textContent = 'האימות מתעכב. אם שילמתם, הקישור יישלח אליכם. אפשר גם לבדוק שוב מאוחר יותר.';
+            checkoutClose.classList.remove('hidden');
+            checkoutClose.textContent = 'סגירה';
+            checkoutInProgress = false;
+          }
+        };
+
+        poll();
+      };
+
+      const formatCheckoutError = (error) => {
+        if (error.message === 'Failed to fetch') {
+          if (location.protocol === 'file:') {
+            return 'האתר נפתח כקובץ מקומי. הפעילו את השרת עם npm start ופתחו את http://localhost:4173';
+          }
+          return 'לא ניתן להתחבר לשרת. ודאו שהשרת רץ (npm start) ושהאתר נפתח דרך http://localhost:4173';
+        }
+        return error.message || 'נסו שוב בעוד רגע.';
+      };
+
+      checkoutDialog.addEventListener('close', () => {
+        resetCheckoutDialog();
+        checkoutInProgress = false;
+      });
+
+      document.querySelectorAll('[data-checkout]').forEach((button) => {
+        button.addEventListener('click', async (event) => {
+          event.preventDefault();
+          if (checkoutInProgress) return;
+          checkoutInProgress = true;
+          resetCheckoutDialog();
+          checkoutDialog.showModal();
+
+          try {
+            const response = await fetch('/api/checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: '{}'
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.checkoutUrl) {
+              throw new Error(data.error || 'לא ניתן ליצור תשלום');
+            }
+            if (!data.orderId || !data.token) {
+              throw new Error('השרת לא מעודכן. עצרו והפעילו מחדש עם npm start.');
+            }
+
+            checkoutReopen.href = data.checkoutUrl;
+            checkoutReopen.classList.remove('hidden');
+            checkoutReopen.classList.add('flex');
+
+            const paymentWindow = window.open(data.checkoutUrl, '_blank', 'noopener,noreferrer');
+            checkoutTitle.textContent = 'השלימו את התשלום בטאב שנפתח';
+            checkoutMessage.textContent = paymentWindow
+              ? 'תשלום מאובטח נפתח בטאב חדש. תישארו באתר — נעדכן אתכם כאן מיד כשהתשלום יאושר.'
+              : 'הדפדפן חסם את פתיחת הטאב. לחצו על הכפתור למטה כדי לפתוח את עמוד התשלום.';
+            checkoutClose.classList.remove('hidden');
+            checkoutClose.textContent = 'ביטול';
+
+            pollCheckoutOrder(data.orderId, data.token);
+          } catch (error) {
+            checkoutInProgress = false;
+            checkoutSpinner.classList.add('hidden');
+            checkoutTitle.textContent = 'לא הצלחנו לפתוח את התשלום';
+            checkoutMessage.textContent = formatCheckoutError(error);
+            checkoutClose.classList.remove('hidden');
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

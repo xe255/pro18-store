@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="noindex,nofollow">
+  <title>ניהול הזמנות | Pro18</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Heebo:wght@800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Assistant'], display: ['Heebo'] }, colors: { ink: '#07111f', mint: '#70f0c0' } } }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-ink font-sans text-slate-100">
+  <div class="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_10%_5%,rgba(59,130,246,.12),transparent_28rem),radial-gradient(circle_at_90%_25%,rgba(112,240,192,.07),transparent_25rem)]"></div>
+
+  <main class="relative mx-auto min-h-screen max-w-7xl px-4 py-6 sm:px-6">
+    <section id="loginView" class="grid min-h-[85vh] place-items-center">
+      <form id="loginForm" class="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/[.05] p-6 shadow-2xl backdrop-blur sm:p-8">
+        <div class="grid size-12 place-items-center rounded-2xl bg-mint font-display font-black text-ink">P18</div>
+        <h1 class="mt-6 font-display text-3xl font-black">כניסת מנהל</h1>
+        <p class="mt-2 text-sm text-slate-400">ניהול הזמנות, מלאי ומסירת קישורים.</p>
+        <label class="mt-7 block text-sm font-bold" for="password">סיסמת מנהל</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required
+          class="mt-2 min-h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 outline-none transition focus:border-mint/50 focus:ring-4 focus:ring-mint/10">
+        <p id="loginError" class="mt-3 hidden text-sm font-bold text-rose-300"></p>
+        <button class="mt-5 min-h-12 w-full rounded-xl bg-mint px-5 font-black text-ink transition hover:bg-[#91f7d2]" type="submit">כניסה לדשבורד</button>
+      </form>
+    </section>
+
+    <section id="dashboardView" class="hidden">
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-white/[.07] pb-5">
+        <div class="flex items-center gap-3">
+          <span class="grid size-10 place-items-center rounded-xl bg-mint font-display font-black text-ink">P18</span>
+          <div><h1 class="font-display text-xl font-black">מרכז הבקרה</h1><p class="text-xs text-slate-500">הזמנות ומלאי בזמן אמת</p></div>
+        </div>
+        <div class="flex gap-2">
+          <button id="refreshButton" class="min-h-11 rounded-xl border border-white/10 px-4 text-sm font-bold hover:bg-white/[.05]">רענון</button>
+          <button id="logoutButton" class="min-h-11 rounded-xl border border-rose-300/15 px-4 text-sm font-bold text-rose-200 hover:bg-rose-300/[.06]">יציאה</button>
+        </div>
+      </header>
+
+      <div id="notice" class="mt-5 hidden rounded-xl border px-4 py-3 text-sm font-bold"></div>
+
+      <section class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <article class="rounded-2xl border border-white/[.08] bg-white/[.04] p-4"><p class="text-xs font-bold text-slate-500">מלאי פנוי</p><p id="availableCount" class="mt-2 font-display text-3xl font-black text-mint">—</p></article>
+        <article class="rounded-2xl border border-white/[.08] bg-white/[.04] p-4"><p class="text-xs font-bold text-slate-500">הזמנות ששולמו</p><p id="paidCount" class="mt-2 font-display text-3xl font-black">—</p></article>
+        <article class="rounded-2xl border border-white/[.08] bg-white/[.04] p-4"><p class="text-xs font-bold text-slate-500">ממתינות למסירה</p><p id="waitingCount" class="mt-2 font-display text-3xl font-black text-amber-200">—</p></article>
+        <article class="rounded-2xl border border-white/[.08] bg-white/[.04] p-4"><p class="text-xs font-bold text-slate-500">הכנסה מאושרת</p><p id="revenue" class="mt-2 font-display text-3xl font-black">—</p></article>
+      </section>
+
+      <div class="mt-6 grid gap-6 xl:grid-cols-[1fr_1.55fr]">
+        <section class="rounded-[1.5rem] border border-white/[.08] bg-white/[.035] p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div><h2 class="font-display text-xl font-black">מלאי קישורים</h2><p class="mt-1 text-xs text-slate-500">קישור אחד בכל שורה. כפילויות יידחו אוטומטית.</p></div>
+            <span id="inventoryTotal" class="rounded-full bg-white/[.06] px-3 py-1 text-xs font-bold">—</span>
+          </div>
+          <form id="inventoryForm" class="mt-5">
+            <textarea id="inventoryLinks" rows="6" required placeholder="https://..."
+              class="w-full rounded-xl border border-white/10 bg-black/20 p-3 text-left text-sm outline-none focus:border-mint/50" dir="ltr"></textarea>
+            <button class="mt-3 min-h-11 w-full rounded-xl bg-mint px-4 font-black text-ink" type="submit">הוספת קישורים למלאי</button>
+          </form>
+          <div id="inventoryList" class="mt-5 max-h-[430px] space-y-2 overflow-y-auto"></div>
+        </section>
+
+        <section class="rounded-[1.5rem] border border-white/[.08] bg-white/[.035] p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div><h2 class="font-display text-xl font-black">הזמנות אחרונות</h2><p class="mt-1 text-xs text-slate-500">עד 200 הזמנות אחרונות</p></div>
+            <select id="statusFilter" class="min-h-10 rounded-xl border border-white/10 bg-[#0c1726] px-3 text-sm font-bold outline-none">
+              <option value="">כל הסטטוסים</option>
+              <option value="pending">ממתינה לתשלום</option>
+              <option value="fulfilled">נמסרה</option>
+              <option value="paid_awaiting_stock">ממתינה למלאי</option>
+              <option value="manual_review">בדיקה ידנית</option>
+              <option value="failed">נכשלה</option>
+              <option value="cancelled">בוטלה</option>
+            </select>
+          </div>
+          <div id="ordersList" class="mt-5 space-y-3"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="deliveryDialog" class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-[1.5rem] border border-white/10 bg-[#0d1a2b] p-0 text-slate-100 shadow-2xl backdrop:bg-black/75">
+    <form id="deliveryForm" class="p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div><h2 class="font-display text-xl font-black">מסירה ידנית</h2><p class="mt-1 text-xs text-slate-500">השאירו ריק כדי להקצות אוטומטית מהמלאי.</p></div>
+        <button id="closeDelivery" type="button" class="grid size-10 place-items-center rounded-full bg-white/[.06]">×</button>
+      </div>
+      <input id="deliveryOrderId" type="hidden">
+      <label for="manualUrl" class="mt-6 block text-sm font-bold">קישור מימוש חריג</label>
+      <input id="manualUrl" type="url" placeholder="https://..." dir="ltr"
+        class="mt-2 min-h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 text-left outline-none focus:border-mint/50">
+      <button type="submit" class="mt-5 min-h-12 w-full rounded-xl bg-mint px-5 font-black text-ink">הקצאה ומסירה</button>
+    </form>
+  </dialog>
+
+  <script src="/admin.js" defer></script>
+</body>
+</html>
