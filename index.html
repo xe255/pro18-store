@@ -783,18 +783,28 @@
         return Number.isInteger(rounded) ? `${rounded} ₪` : `${rounded.toFixed(2)} ₪`;
       };
 
-      const metaProductPayload = (quantity, value, currency = 'ILS') => ({
-        value,
-        currency,
-        content_name: 'Google AI Pro',
-        content_type: 'product',
-        content_ids: [`google-ai-pro-18m-x${quantity}`],
-        num_items: quantity,
-      });
+      const metaProductPayload = (quantity, value, currency = 'ILS') => {
+        const qty = Number(quantity) || 1;
+        const amount = Number(value) || 0;
+        const unit = qty > 0 ? Math.round((amount / qty) * 100) / 100 : amount;
+        const contentId = `google-ai-pro-18m-x${qty}`;
+        return {
+          value: amount,
+          currency,
+          content_name: 'Google AI Pro',
+          content_type: 'product',
+          content_ids: [contentId],
+          contents: [{ id: contentId, quantity: qty, item_price: unit }],
+          num_items: qty,
+        };
+      };
 
       const trackMetaPurchase = (orderId, quantity, value, currency = 'ILS') => {
-        if (!window.pro18Meta) return;
-        window.pro18Meta.purchaseOnce(orderId, metaProductPayload(quantity, value, currency));
+        if (!window.pro18Meta || !orderId) return;
+        window.pro18Meta.purchaseOnce(orderId, {
+          ...metaProductPayload(quantity, value, currency),
+          order_id: orderId,
+        });
       };
 
       const updateTierButtons = () => {

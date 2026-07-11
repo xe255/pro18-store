@@ -535,8 +535,12 @@ const contentSecurityPolicy = {
 
 if (META_PIXEL_ID) {
   contentSecurityPolicy.scriptSrc.push('https://connect.facebook.net');
-  contentSecurityPolicy.connectSrc.push('https://www.facebook.com', 'https://connect.facebook.net');
-  contentSecurityPolicy.imgSrc.push('https://www.facebook.com');
+  contentSecurityPolicy.connectSrc.push(
+    'https://www.facebook.com',
+    'https://connect.facebook.net',
+    'https://graph.facebook.com'
+  );
+  contentSecurityPolicy.imgSrc.push('https://www.facebook.com', 'https://www.facebook.com/tr/');
 }
 
 app.use(helmet({
@@ -948,7 +952,24 @@ src="https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 <script>
-window.pro18Meta={track(event,data){if(typeof fbq==='function')fbq('track',event,data||{})},purchaseOnce(orderId,data){const key='meta_purchase_'+orderId;if(sessionStorage.getItem(key))return;this.track('Purchase',data);sessionStorage.setItem(key,'1')}};
+window.pro18Meta={
+  track(event,data,options){
+    if(typeof fbq!=='function')return;
+    if(options&&options.eventID)fbq('track',event,data||{},{eventID:String(options.eventID)});
+    else fbq('track',event,data||{});
+  },
+  purchaseOnce(orderId,data){
+    if(!orderId)return;
+    const key='meta_purchase_'+orderId;
+    try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');}catch(e){}
+    const value=Number(data&&data.value);
+    const payload=Object.assign({},data,{
+      value:Number.isFinite(value)?value:0,
+      currency:(data&&data.currency)||'ILS'
+    });
+    this.track('Purchase',payload,{eventID:orderId});
+  }
+};
 </script>`;
 }
 

@@ -53,6 +53,18 @@
       const message = document.getElementById('message');
       const orderNumber = document.getElementById('orderNumber');
       let attempts = 0;
+      let purchaseTracked = false;
+
+      // Clearo redirects here only after successful payment. Fire Purchase as soon
+      // as we can read order value — do not wait for inventory fulfillment.
+      const PURCHASE_READY = new Set([
+        'pending',
+        'confirmed',
+        'fulfilled',
+        'paid_awaiting_stock',
+        'manual_review',
+      ]);
+      const FAILED = new Set(['failed', 'cancelled', 'checkout_error']);
 
       if (!order || !token) {
         title.textContent = 'פרטי ההזמנה חסרים';
@@ -63,14 +75,23 @@
       orderNumber.textContent = `מספר הזמנה: ${order}`;
 
       const trackPurchase = (data) => {
-        if (!window.pro18Meta) return;
+        if (purchaseTracked || !window.pro18Meta) return;
+        if (!PURCHASE_READY.has(data.status)) return;
+
+        const quantity = Number(data.quantity) || 1;
+        const value = Number(data.total ?? data.amount);
+        if (!Number.isFinite(value) || value <= 0) return;
+
+        purchaseTracked = true;
         window.pro18Meta.purchaseOnce(order, {
-          value: data.total || data.amount,
+          value,
           currency: data.currency || 'ILS',
           content_name: 'Google AI Pro',
           content_type: 'product',
-          content_ids: [`google-ai-pro-18m-x${data.quantity || 1}`],
-          num_items: data.quantity || 1,
+          content_ids: [`google-ai-pro-18m-x${quantity}`],
+          contents: [{ id: `google-ai-pro-18m-x${quantity}`, quantity, item_price: Math.round((value / quantity) * 100) / 100 }],
+          num_items: quantity,
+          order_id: order,
         });
       };
 
@@ -83,10 +104,12 @@
           if (!response.ok) throw new Error();
           const data = await response.json();
 
+          // Critical: fire Purchase on thank-you page ASAP (do not wait for links).
+          trackPurchase(data);
+
           const redemptionUrls = data.redemptionUrls || (data.redemptionUrl ? [data.redemptionUrl] : []);
 
           if (data.status === 'fulfilled' && redemptionUrls.length) {
-            trackPurchase(data);
             document.getElementById('pendingIcon').classList.add('hidden');
             document.getElementById('successIcon').classList.remove('hidden');
             document.getElementById('successIcon').classList.add('grid');
@@ -108,14 +131,13 @@
           }
 
           if (data.status === 'paid_awaiting_stock' || data.status === 'manual_review' || data.status === 'confirmed') {
-            trackPurchase(data);
             title.textContent = 'התשלום אושר';
             message.textContent = 'ההזמנה נקלטה בהצלחה.';
             document.getElementById('manualBox').classList.remove('hidden');
             return;
           }
 
-          if (data.status === 'failed' || data.status === 'cancelled') {
+          if (FAILED.has(data.status)) {
             location.href = data.status === 'failed' ? '/failed' : '/cancelled';
             return;
           }
@@ -125,7 +147,7 @@
           }
         }
 
-        if (attempts < 60) setTimeout(checkOrder, attempts < 10 ? 2000 : 5000);
+        if (attempts < 60) setTimeout(checkOrder, attempts < 10 ? 1000 : 5000);
       }
 
       checkOrder();
