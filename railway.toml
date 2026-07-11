@@ -1,0 +1,12 @@
+[build]
+buildCommand = "npm install"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/health"
+restartPolicyType = "ON_FAILURE"
+
+# Persistent SQLite storage survives redeploys.
+[[deploy.mounts]]
+volumeName = "pro18-store-data"
+mountPath = "/data"
