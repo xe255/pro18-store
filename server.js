@@ -24,6 +24,10 @@ const PAYMENT_SURCHARGE_PERCENT = Number(process.env.PAYMENT_SURCHARGE_PERCENT |
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (IS_PRODUCTION ? '' : 'change-me');
 const SESSION_SECRET = process.env.SESSION_SECRET || (IS_PRODUCTION ? '' : 'dev-session-secret-change-me');
 const INVENTORY_SECRET = process.env.INVENTORY_ENCRYPTION_KEY || (IS_PRODUCTION ? '' : 'dev-inventory-secret-change-me');
+const META_PIXEL_ID = (() => {
+  const value = String(process.env.META_PIXEL_ID || '').trim();
+  return /^\d+$/.test(value) ? value : '';
+})();
 
 if (IS_PRODUCTION) {
   const missing = [
@@ -518,18 +522,25 @@ async function deliverOrder(order) {
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
+
+const contentSecurityPolicy = {
+  defaultSrc: ["'self'"],
+  scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.tailwindcss.com'],
+  styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
+  fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+  imgSrc: ["'self'", 'data:'],
+  connectSrc: ["'self'"],
+  frameAncestors: ["'none'"],
+};
+
+if (META_PIXEL_ID) {
+  contentSecurityPolicy.scriptSrc.push('https://connect.facebook.net');
+  contentSecurityPolicy.connectSrc.push('https://www.facebook.com', 'https://connect.facebook.net');
+  contentSecurityPolicy.imgSrc.push('https://www.facebook.com');
+}
+
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.tailwindcss.com'],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
-      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
-      imgSrc: ["'self'", 'data:'],
-      connectSrc: ["'self'"],
-      frameAncestors: ["'none'"],
-    },
-  },
+  contentSecurityPolicy: { directives: contentSecurityPolicy },
   crossOriginEmbedderPolicy: false,
 }));
 
@@ -741,6 +752,7 @@ app.get('/api/orders/:publicId', (request, response) => {
     id: order.public_id,
     status: order.status,
     amount: order.amount,
+    total: Math.round(order.amount * (1 + PAYMENT_SURCHARGE_PERCENT / 100) * 100) / 100,
     currency: order.currency,
     quantity: order.quantity || 1,
     deliveryStatus: order.delivery_status,
@@ -914,10 +926,31 @@ for (const [route, file] of Object.entries(FAVICON_FILES)) {
   app.get(route, (request, response) => response.sendFile(path.join(ROOT, file)));
 }
 
-app.get('/', (request, response) => response.sendFile(path.join(ROOT, 'index.html')));
-app.get('/success', (request, response) => response.sendFile(path.join(ROOT, 'success.html')));
-app.get('/failed', (request, response) => response.sendFile(path.join(ROOT, 'failed.html')));
-app.get('/cancelled', (request, response) => response.sendFile(path.join(ROOT, 'cancelled.html')));
+const META_PIXEL_PLACEHOLDER = '<!-- META_PIXEL -->';
+
+function metaPixelSnippet() {
+  if (!META_PIXEL_ID) return '';
+  return `<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','${META_PIXEL_ID}');
+fbq('track','PageView');
+window.pro18Meta={track(event,data){if(typeof fbq==='function')fbq('track',event,data||{})},purchaseOnce(orderId,data){const key='meta_purchase_'+orderId;if(sessionStorage.getItem(key))return;this.track('Purchase',data);sessionStorage.setItem(key,'1')}};
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1"></noscript>`;
+}
+
+function sendPublicHtml(response, fileName) {
+  const filePath = path.join(ROOT, fileName);
+  if (!META_PIXEL_ID) return response.sendFile(filePath);
+  const html = fs.readFileSync(filePath, 'utf8');
+  if (!html.includes(META_PIXEL_PLACEHOLDER)) return response.sendFile(filePath);
+  return response.type('html').send(html.replace(META_PIXEL_PLACEHOLDER, metaPixelSnippet()));
+}
+
+app.get('/', (request, response) => sendPublicHtml(response, 'index.html'));
+app.get('/success', (request, response) => sendPublicHtml(response, 'success.html'));
+app.get('/failed', (request, response) => sendPublicHtml(response, 'failed.html'));
+app.get('/cancelled', (request, response) => sendPublicHtml(response, 'cancelled.html'));
 app.get('/admin', (request, response) => response.sendFile(path.join(ROOT, 'admin.html')));
 app.get('/admin.js', (request, response) => response.sendFile(path.join(ROOT, 'admin.js')));
 

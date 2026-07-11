@@ -9,6 +9,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- META_PIXEL -->
   <meta name="description" content="קוד דיגיטלי ל־Google AI Pro למשך 18 חודשים. רוכשים, מקבלים קישור מימוש של Google ומפעילים את המינוי בלחיצה.">
   <title>Pro18 | קוד Google AI Pro ל־18 חודשים</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -782,6 +783,20 @@
         return Number.isInteger(rounded) ? `${rounded} ₪` : `${rounded.toFixed(2)} ₪`;
       };
 
+      const metaProductPayload = (quantity, value, currency = 'ILS') => ({
+        value,
+        currency,
+        content_name: 'Google AI Pro',
+        content_type: 'product',
+        content_ids: [`google-ai-pro-18m-x${quantity}`],
+        num_items: quantity,
+      });
+
+      const trackMetaPurchase = (orderId, quantity, value, currency = 'ILS') => {
+        if (!window.pro18Meta) return;
+        window.pro18Meta.purchaseOnce(orderId, metaProductPayload(quantity, value, currency));
+      };
+
       const updateTierButtons = () => {
         [1, 2, 3].forEach((quantity) => {
           const tier = BUNDLE_TIERS[quantity];
@@ -836,6 +851,10 @@
           BUNDLE_TIERS = Object.fromEntries(data.tiers.map((tier) => [tier.quantity, tier]));
           updateTierButtons();
           renderBundleSelection(selectedQuantity);
+          if (window.pro18Meta) {
+            const tier = BUNDLE_TIERS[selectedQuantity] || data.tiers[0];
+            window.pro18Meta.track('ViewContent', metaProductPayload(tier.quantity, tier.total, data.currency));
+          }
         } catch {}
       };
 
@@ -891,7 +910,7 @@
         checkoutRedemption.classList.remove('hidden');
       };
 
-      const showCheckoutSuccess = (title, message, redemptionUrls = []) => {
+      const showCheckoutSuccess = (title, message, redemptionUrls = [], purchaseData = null) => {
         stopCheckoutPolling();
         checkoutSpinner.classList.add('hidden');
         checkoutTitle.textContent = title;
@@ -901,6 +920,10 @@
         checkoutClose.classList.remove('hidden');
         checkoutClose.textContent = 'סגירה';
         checkoutInProgress = false;
+
+        if (purchaseData) {
+          trackMetaPurchase(purchaseData.orderId, purchaseData.quantity, purchaseData.total, purchaseData.currency);
+        }
 
         if (redemptionUrls.length) renderCheckoutRedemptions(redemptionUrls);
       };
@@ -927,7 +950,13 @@
                 redemptionUrls.length > 1
                   ? 'התשלום אושר. כל קישור מימוש מיועד לחשבון Google נפרד.'
                   : 'התשלום אושר והמינוי מוכן להפעלה.',
-                redemptionUrls
+                redemptionUrls,
+                {
+                  orderId: data.id,
+                  quantity: data.quantity || 1,
+                  total: data.total || data.amount,
+                  currency: data.currency || 'ILS',
+                }
               );
               return;
             }
@@ -935,7 +964,14 @@
             if (['paid_awaiting_stock', 'manual_review', 'confirmed'].includes(data.status)) {
               showCheckoutSuccess(
                 'התשלום אושר!',
-                'ההזמנה נקלטה בהצלחה. קישורי המימוש יישלחו אליכם בקרוב.'
+                'ההזמנה נקלטה בהצלחה. קישורי המימוש יישלחו אליכם בקרוב.',
+                [],
+                {
+                  orderId: data.id,
+                  quantity: data.quantity || 1,
+                  total: data.total || data.amount,
+                  currency: data.currency || 'ILS',
+                }
               );
               return;
             }
@@ -1011,6 +1047,14 @@
             }
             if (!data.orderId || !data.token) {
               throw new Error('השרת לא מעודכן. עצרו והפעילו מחדש עם npm start.');
+            }
+
+            if (window.pro18Meta) {
+              window.pro18Meta.track('InitiateCheckout', metaProductPayload(
+                data.quantity || quantity,
+                data.total,
+                'ILS'
+              ));
             }
 
             checkoutReopen.href = data.checkoutUrl;

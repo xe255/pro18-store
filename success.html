@@ -9,6 +9,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- META_PIXEL -->
   <title>התשלום התקבל | Pro18</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,6 +62,18 @@
 
       orderNumber.textContent = `מספר הזמנה: ${order}`;
 
+      const trackPurchase = (data) => {
+        if (!window.pro18Meta) return;
+        window.pro18Meta.purchaseOnce(order, {
+          value: data.total || data.amount,
+          currency: data.currency || 'ILS',
+          content_name: 'Google AI Pro',
+          content_type: 'product',
+          content_ids: [`google-ai-pro-18m-x${data.quantity || 1}`],
+          num_items: data.quantity || 1,
+        });
+      };
+
       async function checkOrder() {
         attempts += 1;
         try {
@@ -73,6 +86,7 @@
           const redemptionUrls = data.redemptionUrls || (data.redemptionUrl ? [data.redemptionUrl] : []);
 
           if (data.status === 'fulfilled' && redemptionUrls.length) {
+            trackPurchase(data);
             document.getElementById('pendingIcon').classList.add('hidden');
             document.getElementById('successIcon').classList.remove('hidden');
             document.getElementById('successIcon').classList.add('grid');
@@ -93,7 +107,8 @@
             return;
           }
 
-          if (data.status === 'paid_awaiting_stock' || data.status === 'manual_review') {
+          if (data.status === 'paid_awaiting_stock' || data.status === 'manual_review' || data.status === 'confirmed') {
+            trackPurchase(data);
             title.textContent = 'התשלום אושר';
             message.textContent = 'ההזמנה נקלטה בהצלחה.';
             document.getElementById('manualBox').classList.remove('hidden');
