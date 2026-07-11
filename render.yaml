@@ -27,4 +27,4 @@ services:
       - key: INVENTORY_ENCRYPTION_KEY
         sync: false
       - key: META_PIXEL_ID
-        sync: false
+        value: "1397572895602522"
