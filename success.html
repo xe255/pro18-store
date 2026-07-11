@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07111f">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <title>התשלום התקבל | Pro18</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,13 +28,10 @@
       <h1 id="title" class="mt-6 font-display text-3xl font-black">התשלום נקלט</h1>
       <p id="message" class="mt-3 leading-7 text-slate-400">אנחנו מאמתים את העסקה ומכינים את קישור המימוש. זה לוקח בדרך כלל כמה שניות.</p>
 
-      <div id="redemptionBox" class="mt-7 hidden rounded-2xl border border-emerald-300/20 bg-emerald-300/[.06] p-4">
-        <p class="text-sm font-bold text-emerald-200">קישור Google AI Pro שלך מוכן</p>
-        <a id="redemptionLink" href="#" target="_blank" rel="noopener noreferrer"
-           class="mt-4 flex min-h-14 items-center justify-center rounded-xl bg-[#70f0c0] px-5 py-3 font-black text-[#07111f] transition hover:bg-[#91f7d2]">
-          פתיחת קישור המימוש
-        </a>
-        <p class="mt-3 text-xs text-slate-500">הקישור מיועד להזמנה אחת. מומלץ לפתוח אותו מיד.</p>
+      <div id="redemptionBox" class="mt-7 hidden rounded-2xl border border-emerald-300/20 bg-emerald-300/[.06] p-4 text-left">
+        <p id="redemptionTitle" class="text-sm font-bold text-emerald-200">קישור Google AI Pro שלך מוכן</p>
+        <div id="redemptionLinks" class="mt-4 space-y-3"></div>
+        <p class="mt-3 text-xs text-slate-500">כל קישור מיועד להפעלה אחת. מומלץ לפתוח אותו מיד.</p>
       </div>
 
       <div id="manualBox" class="mt-7 hidden rounded-2xl border border-amber-300/20 bg-amber-300/[.06] p-4 text-sm leading-6 text-amber-100">
@@ -68,13 +70,25 @@
           if (!response.ok) throw new Error();
           const data = await response.json();
 
-          if (data.status === 'fulfilled' && data.redemptionUrl) {
+          const redemptionUrls = data.redemptionUrls || (data.redemptionUrl ? [data.redemptionUrl] : []);
+
+          if (data.status === 'fulfilled' && redemptionUrls.length) {
             document.getElementById('pendingIcon').classList.add('hidden');
             document.getElementById('successIcon').classList.remove('hidden');
             document.getElementById('successIcon').classList.add('grid');
-            title.textContent = 'הקישור שלך מוכן';
-            message.textContent = 'התשלום אושר והמינוי מוכן להפעלה.';
-            document.getElementById('redemptionLink').href = data.redemptionUrl;
+            title.textContent = redemptionUrls.length > 1 ? 'הקישורים שלך מוכנים' : 'הקישור שלך מוכן';
+            message.textContent = redemptionUrls.length > 1
+              ? 'התשלום אושר. כל קישור מימוש מיועד לחשבון Google נפרד.'
+              : 'התשלום אושר והמינוי מוכן להפעלה.';
+            document.getElementById('redemptionTitle').textContent = redemptionUrls.length > 1
+              ? `${redemptionUrls.length} קישורי Google AI Pro מוכנים`
+              : 'קישור Google AI Pro שלך מוכן';
+            document.getElementById('redemptionLinks').innerHTML = redemptionUrls.map((url, index) => `
+              <a href="${url}" target="_blank" rel="noopener noreferrer"
+                 class="flex min-h-14 items-center justify-center rounded-xl bg-[#70f0c0] px-5 py-3 font-black text-[#07111f] transition hover:bg-[#91f7d2]">
+                ${redemptionUrls.length > 1 ? `פתיחת קישור מימוש ${index + 1}` : 'פתיחת קישור המימוש'}
+              </a>
+            `).join('');
             document.getElementById('redemptionBox').classList.remove('hidden');
             return;
           }
